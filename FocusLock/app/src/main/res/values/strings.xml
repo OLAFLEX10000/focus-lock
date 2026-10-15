@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<resources>
+  <string name="service_description">FocusLock checks the foreground app package, covers blocked apps and returns Home during a focus session. Android grants screen access for this check; FocusLock uses only the root package name, never message or screen text. All data stays on your phone.</string>
+</resources>
