@@ -37,13 +37,15 @@ Neither build path produces a production release configuration. For distribution
 
 ## Java Checks
 
-Run both standalone suites without the Android SDK:
+Run the standalone suites without the Android SDK:
 
 ```sh
 ./scripts/test.sh
 ```
 
 The clock suite checks expiry, wall-clock changes within one boot, reboot fallback, and empty session state. The selection suite checks active additions, attempted removals and clears, editing after expiry, and input isolation.
+
+The extension suite checks increasing both deadlines, repeated extensions, clock changes, reboot handling, expired sessions, zero/negative additions, and overflow rejection. On a phone, also verify that an extension updates the displayed deadline and unlock alarm, survives reopening, preserves selected apps, and keeps apps blocked past the original deadline. Cancelling the confirmation must leave the deadline unchanged.
 
 ## Device Checks
 

@@ -32,22 +32,54 @@ final class Store {
     return new HashSet<>(p.getStringSet("apps", Collections.emptySet()));
   }
 
-  private static final Object SELECTION_LOCK = new Object();
+  private static final Object STATE_LOCK = new Object();
 
   boolean selection(Set<String> requested) {
-    synchronized (SELECTION_LOCK) {
+    synchronized (STATE_LOCK) {
       Set<String> next = SelectionRules.apply(apps(), requested, remaining() > 0);
       return p.edit().putStringSet("apps", next).remove("managedAppliedEnd").commit();
     }
   }
 
   boolean start(long duration) {
-    if (remaining() > 0 || duration <= 0 || apps().isEmpty()) return false;
-    new FocusPolicy(c).prepare(duration);
-    return p.edit()
-        .putLong("wall", System.currentTimeMillis() + duration)
-        .putLong("elapsed", SystemClock.elapsedRealtime() + duration)
-        .putInt("boot", boot())
-        .commit();
+    synchronized (STATE_LOCK) {
+      if (remaining() > 0 || duration <= 0 || apps().isEmpty()) return false;
+      new FocusPolicy(c).prepare(duration);
+      return p.edit()
+          .putLong("wall", System.currentTimeMillis() + duration)
+          .putLong("elapsed", SystemClock.elapsedRealtime() + duration)
+          .putInt("boot", boot())
+          .commit();
+    }
+  }
+
+  boolean extend(long extra) {
+    synchronized (STATE_LOCK) {
+      long wall = System.currentTimeMillis();
+      long elapsed = SystemClock.elapsedRealtime();
+      int currentBoot = boot();
+      long[] deadlines;
+      try {
+        deadlines =
+            SessionClock.extend(
+                p.getLong("wall", 0),
+                p.getLong("elapsed", 0),
+                p.getInt("boot", -2),
+                wall,
+                elapsed,
+                currentBoot,
+                extra);
+      } catch (IllegalArgumentException | ArithmeticException invalid) {
+        return false;
+      }
+      new FocusPolicy(c).prepare(extra);
+      return p.edit()
+          .putLong("wall", deadlines[0])
+          .putLong("elapsed", deadlines[1])
+          .putInt("boot", currentBoot)
+          .remove("scheduledEnd")
+          .remove("managedAppliedEnd")
+          .commit();
+    }
   }
 }

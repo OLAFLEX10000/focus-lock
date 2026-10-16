@@ -20,8 +20,8 @@ android = '{' + namespace + '}'
 manifest = ET.parse('FocusLock/app/src/main/AndroidManifest.xml')
 root = manifest.getroot()
 root.set('package', os.environ['FOCUS_PACKAGE'])
-root.set(android + 'versionCode', '4')
-root.set(android + 'versionName', '0.4')
+root.set(android + 'versionCode', '5')
+root.set(android + 'versionName', '0.5')
 root.find('application').set(android + 'debuggable', 'true')
 for component in root.iter():
     name = component.get(android + 'name', '')

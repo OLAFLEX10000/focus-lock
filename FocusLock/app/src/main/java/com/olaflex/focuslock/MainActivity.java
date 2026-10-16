@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
       };
 
   static String format(long ms) {
-    long s = (ms + 999) / 1000;
+    long s = ms / 1000 + (ms % 1000 == 0 ? 0 : 1);
     return String.format(Locale.US, "%02d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60);
   }
 
@@ -175,6 +175,7 @@ public class MainActivity extends Activity {
               + ". There is no end-session button.",
           16);
       text(store.apps().size() + " apps locked", 24);
+      button("Extend focus time", () -> extendTime());
       button("Add more apps to block", () -> addApps());
       if (!enabled()) button("Restore blocking permission", () -> permission());
       button(
@@ -239,6 +240,91 @@ public class MainActivity extends Activity {
             + " power controls can bypass it. Browser pages and notifications are not filtered;"
             + " select browsers to block access through them. All data stays on your phone.",
         13);
+  }
+
+  void extendTime() {
+    new AlertDialog.Builder(this)
+        .setTitle("Extend focus time")
+        .setItems(
+            new String[] {"Add 15 minutes", "Add 1 hour", "Add 1 day", "Custom minutes"},
+            (dialog, choice) -> {
+              if (choice < 3) {
+                confirmExtension(new long[] {15, 60, 1440}[choice] * 60000L);
+              } else {
+                EditText input = new EditText(this);
+                input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                input.setHint("Minutes to add");
+                AlertDialog custom =
+                    new AlertDialog.Builder(this)
+                        .setTitle("Add minutes")
+                        .setView(input)
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Continue", null)
+                        .create();
+                custom.setOnShowListener(
+                    ignored ->
+                        custom
+                            .getButton(AlertDialog.BUTTON_POSITIVE)
+                            .setOnClickListener(
+                                v -> {
+                                  try {
+                                    long extra =
+                                        Math.multiplyExact(
+                                            Long.parseLong(input.getText().toString().trim()),
+                                            60000L);
+                                    if (extra <= 0) throw new NumberFormatException();
+                                    custom.dismiss();
+                                    confirmExtension(extra);
+                                  } catch (NumberFormatException | ArithmeticException invalid) {
+                                    input.setError("Enter a positive whole number of minutes");
+                                  }
+                                }));
+                custom.show();
+              }
+            })
+        .setNegativeButton("Cancel", null)
+        .show();
+  }
+
+  void confirmExtension(long extra) {
+    if (store.remaining() == 0) {
+      Toast.makeText(
+              this, "Session finished. Start a new session to focus again.", Toast.LENGTH_SHORT)
+          .show();
+      render();
+      return;
+    }
+    new AlertDialog.Builder(this)
+        .setTitle("Add " + format(extra) + " to this session?")
+        .setMessage(
+            "All selected apps will stay blocked for the added time. This extension cannot be"
+                + " undone inside FocusLock.")
+        .setNegativeButton("Cancel", null)
+        .setPositiveButton(
+            "Extend",
+            (dialog, which) -> {
+              try {
+                if (!store.extend(extra)) {
+                  Toast.makeText(
+                          this,
+                          "Could not extend. The session may have ended or the value is too large.",
+                          Toast.LENGTH_LONG)
+                      .show();
+                  render();
+                  return;
+                }
+              } catch (RuntimeException error) {
+                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                return;
+              }
+              try {
+                new FocusPolicy(this).sync();
+              } catch (RuntimeException error) {
+                android.util.Log.e("FocusLock", "Extended-session policy sync failed", error);
+              }
+              render();
+            })
+        .show();
   }
 
   void addApps() {

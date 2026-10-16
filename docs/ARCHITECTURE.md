@@ -20,6 +20,8 @@ Starting a session saves both wall-clock and elapsed-realtime deadlines and the 
 
 The Accessibility service reacts to window changes and also checks the active root package every 300 milliseconds. A selected foreground package triggers an Accessibility overlay and a throttled Home action. Policy synchronization runs approximately once per second while the service is connected.
 
+Extensions accept only positive additional time while a session is active. The store serializes session starts, selection updates, and extensions. It extends both deadlines without changing selected apps, refreshes the saved boot count after a reboot, and invalidates the cached alarm and managed policy deadline. Deadline arithmetic rejects overflow. A backward clock change cannot make an extension reduce the previously stored wall-clock deadline.
+
 ## Restoration
 
 Grayscale stores the previous display settings before applying changes. The deadline alarm and subsequent service checks restore those values when the session expires. Boot and package-update broadcasts clear cached alarm scheduling state so the alarm can be scheduled again.

@@ -10,6 +10,7 @@ Focus Lock runs locally. There are no accounts, ads, subscriptions, servers, or 
 
 - Block selected apps for 25, 60, or 120 minutes, or until a date and time you choose.
 - Add more apps during a session. Existing blocks cannot be removed inside the app until expiry, and additions keep the same deadline.
+- Extend an active session by 15 minutes, 1 hour, 1 day, or a custom number of minutes. The deadline can only move later.
 - Use a plain, black, text-only home screen. Blocked apps disappear from its list until the timer expires.
 - Enable session grayscale with an optional computer-assisted permission grant.
 - Keep the session running when the dashboard closes.
@@ -27,6 +28,8 @@ Requires Android 8.0 or newer. Build an APK using the instructions below, transf
 5. Optionally choose **Use plain home screen** and select FocusLock 2 as your Home app.
 
 During a session, **Add more apps to block** adds distractions immediately. There is no in-app cancellation or removal control while the timer runs.
+
+Use **Extend focus time** to add time to every selected app's block. Review the confirmation before applying it; added time cannot be removed inside Focus Lock.
 
 Installing the APK on another Android phone creates a separate installation. Enable its permissions and choose its apps and deadline there; the APK does not contain your current blocklist or timer. Grayscale permission must also be granted separately on each phone.
 

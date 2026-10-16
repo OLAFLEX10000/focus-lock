@@ -14,6 +14,8 @@ fi
     FocusLock/app/src/main/java/com/olaflex/focuslock/SessionClock.java \
     FocusLock/app/src/main/java/com/olaflex/focuslock/SelectionRules.java \
     FocusLock/tests/SessionClockTest.java \
-    FocusLock/tests/SelectionRulesTest.java
+    FocusLock/tests/SelectionRulesTest.java \
+    FocusLock/tests/SessionExtensionTest.java
 "$java_cmd" -cp "$test_dir" SessionClockTest
 "$java_cmd" -cp "$test_dir" SelectionRulesTest
+"$java_cmd" -cp "$test_dir" SessionExtensionTest
